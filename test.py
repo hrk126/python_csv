@@ -21,7 +21,7 @@ for ch in content:
 with open(file_name, mode="w", encoding="UTF-8") as f:
     f.write(result)
 
-colspecs = [(0, 2), (2, 4), (4, 6)]
+colspecs = [2,2,2]
 col_name = ['id1', 'id2', 'id3']
 df = pd.read_fwf(file_name, colspecs=colspecs, names=col_name, encoding='UTF-8')
 
