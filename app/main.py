@@ -17,7 +17,7 @@ def get_db():
 
 @app.get('/', response_model=List[schemas.Item])
 async def read_item(skip: int=0, limit: int=100, db: Session=Depends(get_db)):
-  items = crud.get_items(db, skip=skip, limit=limit)
+  items = crud.get_items(db=db, skip=skip, limit=limit)
   return items
 
 @app.post('/', response_model=schemas.Item)
