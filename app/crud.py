@@ -2,6 +2,7 @@ from http.client import HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_, not_
 import datetime
+from typing import List
 from . import models, schemas
 
 # create
@@ -45,22 +46,26 @@ def get_data(db: Session, day: str):
   return data
 
 # update
-def update_data(db: Session, data: schemas.ShuketuGet):
-    change_data = db.query(models.Shuketu).filter(models.Shuketu.id == data.id).first()
-    change_data.ad = data.ad
-    change_data.num = data.num
-    change_data.num_all = data.num_all
-    change_data.cust_name = data.cust_name
-    change_data.due_date = data.due_date
-    change_data.tonyu = data.tonyu
-    change_data.inventory = data.inventory
-    change_data.afure = data.afure
-    change_data.shuketubi = data.shuketubi
-    change_data.bin = data.bin
-    change_data.comment = data.comment
-    db.commit()
-    db.refresh(change_data)
-    return change_data
+def update_data(db: Session, data: List[schemas.ShuketuGet]):
+  try:
+    for item in data:
+      change_data = db.query(models.Shuketu).filter(models.Shuketu.id == item.id).first()
+      change_data.ad = item.ad
+      change_data.num = item.num
+      change_data.num_all = item.num_all
+      change_data.cust_name = item.cust_name
+      change_data.due_date = item.due_date
+      change_data.tonyu = item.tonyu
+      change_data.inventory = item.inventory
+      change_data.afure = item.afure
+      change_data.shuketubi = item.shuketubi
+      change_data.bin = item.bin
+      change_data.comment = item.comment
+      db.commit()
+      db.refresh(change_data)
+    return True
+  except:
+    return False
 
 # delete
 def delete_data(db: Session, data: schemas.ShuketuGet):
