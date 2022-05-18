@@ -65,7 +65,7 @@ def update_data(db: Session, data: schemas.ShuketuGet):
 # delete
 def delete_data(db: Session, data: schemas.ShuketuGet):
   try:
-    d_data = db.query(models.Master).filter(models.Master.id == data.id).first()
+    d_data = db.query(models.Shuketu).filter(models.Shuketu.id == data.id).first()
     db.delete(d_data)
     db.commit()
     return True
