@@ -32,10 +32,11 @@ async def get_masters(db: Session=Depends(get_db), hinban: str='', store: Option
   masters = crud.get_masters(db=db, hinban=hinban, store=store)
   return masters
 
-@app.get('/data/', response_model=List[schemas.ShuketuGet])
+@app.get('/data/')
 async def get_data(db: Session=Depends(get_db), day: str=datetime.date.today().isoformat()):
   data = crud.get_data(db=db, day=day)
-  return data
+  all_data = [item.master.hinban for item in data]
+  return all_data
 
 # update
 @app.post('/data/update/', response_model=schemas.ShuketuGet)
