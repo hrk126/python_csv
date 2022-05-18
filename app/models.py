@@ -19,7 +19,7 @@ class Master(Base):
 class Shuketu(Base):
   __tablename__ = 'shuketu'
   id = Column(Integer, primary_key=True, autoincrement=True, index=True)
-  ad = Column(String, ForeignKey('master.ad'), index=True)
+  ad = Column(String, ForeignKey('master.ad', ondelete="SET NULL"), index=True)
   num = Column(Integer, index=True)
   num_all = Column(Integer, index=True)
   cust_name = Column(String, index=True)

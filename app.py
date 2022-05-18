@@ -7,21 +7,20 @@ import pandas as pd
 from st_aggrid import AgGrid, GridOptionsBuilder, JsCode
 from st_aggrid.shared import GridUpdateMode
 
-st.set_page_config(layout="wide")
-
+st.set_page_config(layout='wide')
 # ------------------sidebar-----------------------------------------------
-with st.sidebar.form(key='item'):
-  hinban: str = st.text_input('•i”Ô')
-  store: str = st.text_input('’uê')
-  submit_button = st.form_submit_button(label='‘—M')
-
+shuketubi = st.sidebar.date_input('“ú•t‚ğ“ü—Í', value=datetime.date.today())
+bin = st.sidebar.selectbox('•Ö‚ğ“ü—Í', [1, 2, 3, 4])
 selected_item = st.sidebar.radio('ˆ—‚ğ‘I‘ğ', ['ƒŠƒXƒg“o˜^', '•i”ÔŒŸõ'])
-
 # ------------------header-------------------------------------------------
 st.title(selected_item)
 # ------------------search-------------------------------------------------
-
 if selected_item == '•i”ÔŒŸõ':
+
+  with st.sidebar.form(key='item'):
+    hinban: str = st.text_input('•i”Ô')
+    store: str = st.text_input('’uê')
+    submit_button = st.form_submit_button(label='‘—M')
 
   if submit_button:
     
@@ -31,7 +30,7 @@ if selected_item == '•i”ÔŒŸõ':
     items = res.json()
     df_items = pd.DataFrame(items)
     df_items.rename(
-      columns={
+      columns= {
         'ad': '‚©‚ñ‚r‚d‚k‚e',
         'sup_code': 'd“üæ',
         'seban': '”w”Ô†',
@@ -50,7 +49,7 @@ if selected_item == '•i”ÔŒŸõ':
     gb = GridOptionsBuilder.from_dataframe(st.session_state.df)
     gb.configure_default_column(editable=True)
     gb.configure_grid_options(enableRangeSelection=True)
-    gb.configure_selection(selection_mode="multiple", use_checkbox=True)
+    gb.configure_selection(selection_mode='multiple', use_checkbox=True)
     aggrid_data = AgGrid(
         st.session_state.df,
         gridOptions=gb.build(),
@@ -59,13 +58,39 @@ if selected_item == '•i”ÔŒŸõ':
         update_mode=GridUpdateMode.SELECTION_CHANGED
     )
 
-    if len(aggrid_data['selected_rows']) > 0:
+    if len(aggrid_data['selected_rows']) == 1:
       register_button = st.button('‘I‘ğ‚µ‚½•i”Ô‚ğ“o˜^')
 
       if register_button:
-        
-        st.success('“o˜^‚µ‚Ü‚µ‚½')
+        del st.session_state.df
+        ad = aggrid_data['selected_rows'][0]['‚©‚ñ‚r‚d‚k‚e']
+        url = 'http://127.0.0.1:8000/create/'
+        payload = {
+          'ad': ad,
+          'num': 0,
+          'num_all': 0,
+          'cust_name': '',
+          'due_date': '',
+          'tonyu': 0,
+          'inventory': 0,
+          'afure': 0,
+          'shuketubi': shuketubi.isoformat(),
+          'bin': bin,
+          'comment': ''
+        }
+        res = requests.post(url, json.dumps(payload))
+        if res.status_code == 200:
+          st.success('“o˜^‚µ‚Ü‚µ‚½')
+        else:
+          st.error('–â‘è‚ª”­¶‚µ‚Ü‚µ‚½')
 
 
 elif selected_item == 'ƒŠƒXƒg“o˜^':
-  st.write('list')
+  q = f'?day={shuketubi.isoformat()}'
+  url = f'http://127.0.0.1:8000/data/{q}'
+  res = requests.get(url)
+  data = res.json()
+  df_data = pd.DataFrame(data)
+  st.dataframe(df_data)
+    
+
