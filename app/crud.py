@@ -68,11 +68,12 @@ def update_data(db: Session, data: List[schemas.ShuketuGet]):
     return False
 
 # delete
-def delete_data(db: Session, data: schemas.ShuketuGet):
+def delete_data(db: Session, data: List[int]):
   try:
-    d_data = db.query(models.Shuketu).filter(models.Shuketu.id == data.id).first()
-    db.delete(d_data)
-    db.commit()
+    for item in data:
+      d_data = db.query(models.Shuketu).filter(models.Shuketu.id == item).first()
+      db.delete(d_data)
+      db.commit()
     return True
   except:
     return False

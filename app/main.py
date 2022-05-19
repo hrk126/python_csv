@@ -70,19 +70,11 @@ async def update_data(data: List[schemas.ShuketuGet], db: Session=Depends(get_db
     return {
       'message':'update success'
     }
-  else:
-    return {
-      'message':'error'
-    }
 
 # delete
-@app.delete('/data/delete/')
-async def delete_data(data: schemas.ShuketuGet, db: Session=Depends(get_db)):
+@app.post('/data/delete/')
+async def delete_data(data: List[int], db: Session=Depends(get_db)):
   if crud.delete_data(db=db, data=data):
     return {
       'message':'delete success'
-    }
-  else:
-    return {
-      'message':'error'
     }
