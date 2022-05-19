@@ -91,32 +91,33 @@ elif selected_item == 'ƒŠƒXƒg“o˜^':
   url = f'http://127.0.0.1:8000/data/{q}'
   res = requests.get(url)
   data = res.json()
-  df_data = pd.DataFrame(data)
-  df_data.rename(
-      columns= {
-        'id': 'ID',
-        's_num': 'WŒ‡”',
-        'num_all': 'WŒ‡”(‘S‘Ì)',
-        'cust_name': '“¾ˆÓæ–¼',
-        'due_date': 'Šú“ú',
-        'tonyu': '“Š“ü”',
-        'inventory': 'İŒÉ”',
-        'afure': '‚ ‚Ó‚ê”',
-        'shuketubi': 'WŒ‡“ú',
-        'bin': 'WŒ‡•Ö',
-        'comment': 'ƒRƒƒ“ƒg',
-        'ad': '‚©‚ñ‚r‚d‚k‚e',
-        'sup_code': 'd“üæ',
-        'seban': '”w”Ô†',
-        'hinban': '•i”Ô',
-        'm_num': 'û—e”',
-        'store': 'ƒXƒgƒAƒAƒhƒŒƒX',
-        'k_num': '‰ñ“]–‡”',
-        'y_num': '“Çæ–‡”',
-        'h_num': '”­’–‡”',
-      }, inplace=True
-    )
-  st.session_state.list = df_data
+  if len(data) != 0:
+    df_data = pd.DataFrame(data)
+    df_data.rename(
+        columns= {
+          'id': 'ID',
+          's_num': 'WŒ‡”',
+          'num_all': 'WŒ‡”_‘S‘Ì',
+          'cust_name': '“¾ˆÓæ–¼',
+          'due_date': 'Šú“ú',
+          'tonyu': '“Š“ü”',
+          'inventory': 'İŒÉ”',
+          'afure': '‚ ‚Ó‚ê”',
+          'shuketubi': 'WŒ‡“ú',
+          'bin': 'WŒ‡•Ö',
+          'comment': 'ƒRƒƒ“ƒg',
+          'ad': '‚©‚ñ‚r‚d‚k‚e',
+          'sup_code': 'd“üæ',
+          'seban': '”w”Ô†',
+          'hinban': '•i”Ô',
+          'm_num': 'û—e”',
+          'store': 'ƒXƒgƒAƒAƒhƒŒƒX',
+          'k_num': '‰ñ“]–‡”',
+          'y_num': '“Çæ–‡”',
+          'h_num': '”­’–‡”',
+        }, inplace=True
+      )
+    st.session_state.list = df_data
 
   if 'list' in st.session_state: 
 
@@ -129,33 +130,50 @@ elif selected_item == 'ƒŠƒXƒg“o˜^':
         gridOptions=gb.build(),
         allow_unsafe_jscode=True,
         enable_enterprise_modules=True,
-        update_mode=GridUpdateMode.VALUE_CHANGED
+        update_mode=GridUpdateMode.MODEL_CHANGED
     )
 
     change_button = st.button('C³“à—e‚ğ“o˜^')
     if change_button:
       df = aggrid_data['data']
-    for row in df.itertuples():
+      del st.session_state.list
+      url = 'http://127.0.0.1:8000/data/update/'
+      payload = []
+      for row in df.itertuples():
+          buf = {
+            'id': row[1],
+            'ad':row[2],
+            'num': row[3],
+            'num_all': row[4],
+            'cust_name': row[5],
+            'due_date': row[6],
+            'tonyu': row[7],
+            'inventory': row[8],
+            'afure': row[9],
+            'shuketubi':row[10],
+            'bin': row[11],
+            'comment': row[12]
+          }
+          payload.append(buf)
+      res = requests.post(url, json.dumps(payload))
+      if res.status_code == 200 and res.json()['message'] == 'update success':
+        st.success('“o˜^‚µ‚Ü‚µ‚½')
+      else:
+        st.error(f'–â‘è‚ª”­¶‚µ‚Ü‚µ‚½(status code: {res.status_code})')
+
+    delete_button = st.button('‘I‘ğ‚ğíœ')
+    if delete_button:
+      if len(aggrid_data['selected_rows']) > 0:
         del st.session_state.list
-        ad = aggrid_data['selected_rows'][0]['‚©‚ñ‚r‚d‚k‚e']
-        url = 'http://127.0.0.1:8000/create/'
-        payload = {
-          'ad': ad,
-          'num': 0,
-          'num_all': 0,
-          'cust_name': '',
-          'due_date': '',
-          'tonyu': 0,
-          'inventory': 0,
-          'afure': 0,
-          'shuketubi': shuketubi.isoformat(),
-          'bin': bin,
-          'comment': ''
-        }
+        url = 'http://127.0.0.1:8000/data/delete/'
+        payload = []
+        for row in aggrid_data['selected_rows']:
+          payload.append(row['ID'])
         res = requests.post(url, json.dumps(payload))
-        if res.status_code == 200:
-          st.success('“o˜^‚µ‚Ü‚µ‚½')
+        if res.status_code == 200 and res.json()['message'] == 'delete success':
+          st.success('íœ‚µ‚Ü‚µ‚½')
         else:
           st.error(f'–â‘è‚ª”­¶‚µ‚Ü‚µ‚½(status code: {res.status_code})')
+
 
 
