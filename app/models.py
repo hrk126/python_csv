@@ -6,7 +6,7 @@ class Master(Base):
   __tablename__ = 'master'
   id = Column(Integer, primary_key=True, autoincrement=True, index=True)
   ad = Column(String, unique=True, index=True)
-  sup_code = Column(String, index=True)
+  sup_code = Column(String, ForeignKey('sup.sup_code', ondelete="SET NULL"), index=True)
   seban = Column(String, index=True)
   hinban = Column(String, index=True)
   num = Column(Integer, index=True)
@@ -14,7 +14,7 @@ class Master(Base):
   k_num = Column(Integer, index=True)
   y_num = Column(Integer, index=True)
   h_num = Column(Integer, index=True)
-  shuketu = relationship('Shuketu', backref="master")
+  shuketu = relationship('Shuketu', backref='master')
 
 class Shuketu(Base):
   __tablename__ = 'shuketu'
@@ -31,3 +31,9 @@ class Shuketu(Base):
   bin = Column(Integer, index=True)
   comment = Column(String, index=True)
   
+  class Sup(Base):
+    __tablename__ = 'sup'
+    id = Column(Integer, primary_key=True, autoincrement=True, index=True)
+    sup_code = Column(String, index=True)
+    sup_name = Column(String, index=True)
+    master = relationship('Master', backref='sup')

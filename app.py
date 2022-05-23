@@ -6,6 +6,7 @@ import json
 import pandas as pd
 from st_aggrid import AgGrid, GridOptionsBuilder, JsCode
 from st_aggrid.shared import GridUpdateMode
+import base64
 
 st.set_page_config(layout='wide')
 # ------------------sidebar-----------------------------------------------
@@ -40,6 +41,7 @@ if selected_item == '品番検索':
         'k_num': '回転枚数',
         'y_num': '読取枚数',
         'h_num': '発注枚数',
+        'sup_name':'仕入先名'
       }, inplace=True
     )
     st.session_state.df = df_items
@@ -119,6 +121,7 @@ elif selected_item == 'リスト登録':
           'comment': 'コメント',
           'ad': 'かんＳＥＬＦ',
           'sup_code': '仕入先',
+          'sup_name': '仕入先名',
           'seban': '背番号',
           'hinban': '品番',
           'm_num': '収容数',
@@ -154,16 +157,16 @@ elif selected_item == 'リスト登録':
           buf = {
             'id': row[1],
             'ad':row[2],
-            'num': row[3],
-            'num_all': row[4],
-            'cust_name': row[5],
-            'due_date': row[6],
-            'tonyu': row[7],
-            'inventory': row[8],
-            'afure': row[9],
-            'shuketubi':row[10],
-            'bin': row[11],
-            'comment': row[12]
+            'shuketubi':row[3],
+            'bin': row[4],
+            'num': row[6],
+            'num_all': row[7],
+            'cust_name': row[9],
+            'due_date': row[10],
+            'tonyu': row[12],
+            'inventory': row[18],
+            'afure': row[19],
+            'comment': row[21]
           }
           payload.append(buf)
       res = requests.post(url, json.dumps(payload))
@@ -185,6 +188,13 @@ elif selected_item == 'リスト登録':
           st.success('削除しました')
         else:
           st.error(f'問題が発生しました(status code: {res.status_code})')
+
+    csv = aggrid_data['data'].to_csv(index=False)
+    b64 = base64.b64encode(csv.encode('utf-8-sig')).decode()
+    href = f'<a href="data:application/octet-stream;base64,{b64}" download="result.csv">CSVファイルのダウンロード</a>'
+    st.markdown(href, unsafe_allow_html=True)
+
+
 
 
 
