@@ -27,9 +27,12 @@ async def create_data(data: schemas.ShuketuCreate, db: Session=Depends(get_db)):
 #   re_master = crud.get_master(db=db, id=id)
 #   return re_master
 
-@app.get('/masters/', response_model=List[schemas.MasterGet])
+@app.get('/masters/')
 async def get_masters(db: Session=Depends(get_db), hinban: str='', store: Optional[str]=''):
   masters = crud.get_masters(db=db, hinban=hinban, store=store)
+  for master in masters:
+    master.sup_name = master.sup.sup_name
+    delattr(master,'sup')
   return masters
 
 @app.get('/data/')
@@ -38,27 +41,29 @@ async def get_data(db: Session=Depends(get_db), day: str=datetime.date.today().i
   all_data = []
   for item in data:
     item_master = item.master
+    master_sup = item_master.sup
     buf = {
       'id': item.id,
       'ad': item.ad,
-      's_num': item.num,
-      'num_all': item.num_all,
-      'cust_name': item.cust_name,
-      'due_date': item.due_date,
-      'tonyu': item.tonyu,
-      'inventory': item.inventory,
-      'afure': item.afure,
       'shuketubi': item.shuketubi,
       'bin': item.bin,
-      'comment': item.comment,
-      'sup_code': item_master.sup_code,
-      'seban': item_master.seban,
       'hinban': item_master.hinban,
+      's_num': item.num,
+      'num_all': item.num_all,
       'm_num': item_master.num,
+      'cust_name': item.cust_name,
+      'due_date': item.due_date,
       'store': item_master.store,
+      'tonyu': item.tonyu,
+      'sup_code': item_master.sup_code,
+      'sup_name': master_sup.sup_name,
+      'seban': item_master.seban,
       'k_num': item_master.k_num,
       'y_num': item_master.y_num,
-      'h_num': item_master.h_num
+      'inventory': item.inventory,
+      'afure': item.afure,
+      'h_num': item_master.h_num,
+      'comment': item.comment,
     }
     all_data.append(buf)
   return all_data
