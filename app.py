@@ -29,22 +29,27 @@ if selected_item == '品番検索':
     url = f'http://127.0.0.1:8000/masters/{q}'
     res = requests.get(url)
     items = res.json()
-    df_items = pd.DataFrame(items)
-    df_items.rename(
-      columns= {
-        'ad': 'かんＳＥＬＦ',
-        'sup_code': '仕入先',
-        'seban': '背番号',
-        'hinban': '品番',
-        'num': '収容数',
-        'store': 'ストアアドレス',
-        'k_num': '回転枚数',
-        'y_num': '読取枚数',
-        'h_num': '発注枚数',
-        'sup_name':'仕入先名'
-      }, inplace=True
-    )
-    st.session_state.df = df_items
+    if len(items) != 0: 
+      df_items = pd.DataFrame(items)
+      df_items.rename(
+        columns= {
+          'ad': 'かんＳＥＬＦ',
+          'sup_code': '仕入先',
+          'seban': '背番号',
+          'hinban': '品番',
+          'num': '収容数',
+          'store': 'ストアアドレス',
+          'k_num': '回転枚数',
+          'y_num': '読取枚数',
+          'h_num': '発注枚数',
+          'sup_name':'仕入先名'
+        }, inplace=True
+      )
+      st.session_state.df = df_items
+    else:
+      if 'df' in st.session_state:
+        del st.session_state.df
+      st.write('見つかりませんでした')
 
   if 'df' in st.session_state: 
 
@@ -57,7 +62,7 @@ if selected_item == '品番検索':
         gridOptions=gb.build(),
         allow_unsafe_jscode=True,
         enable_enterprise_modules=True,
-        update_mode=GridUpdateMode.SELECTION_CHANGED
+        update_mode=GridUpdateMode.MODEL_CHANGED
     )
 
     if len(aggrid_data['selected_rows']) == 1:
@@ -132,6 +137,10 @@ elif selected_item == 'リスト登録':
         }, inplace=True
       )
     st.session_state.list = df_data
+  else:
+    if 'list' in st.session_state:
+      del st.session_state.list
+    st.write('対象のリストはありません')
 
   if 'list' in st.session_state: 
 
@@ -146,27 +155,39 @@ elif selected_item == 'リスト登録':
         enable_enterprise_modules=True,
         update_mode=GridUpdateMode.MODEL_CHANGED
     )
-
+    # 修正ボタン
     change_button = st.button('修正内容を登録')
     if change_button:
       df = aggrid_data['data']
       del st.session_state.list
       url = 'http://127.0.0.1:8000/data/update/'
       payload = []
-      for row in df.itertuples():
+      for id, ad, shuketubi, bin, num, num_all, cust_name, due_date, tonyu, inventory, afure, comment in \
+      zip(df['ID'],
+          df['かんＳＥＬＦ'],
+          df['集欠日'],
+          df['集欠便'],
+          df['集欠数'],
+          df['集欠数_全体'],
+          df['得意先名'],
+          df['期日'],
+          df['投入数'],
+          df['在庫数'],
+          df['あふれ数'],
+          df['コメント']):
           buf = {
-            'id': row[1],
-            'ad':row[2],
-            'shuketubi':row[3],
-            'bin': row[4],
-            'num': row[6],
-            'num_all': row[7],
-            'cust_name': row[9],
-            'due_date': row[10],
-            'tonyu': row[12],
-            'inventory': row[18],
-            'afure': row[19],
-            'comment': row[21]
+            'id': id,
+            'ad': ad,
+            'shuketubi': shuketubi,
+            'bin': bin,
+            'num': num,
+            'num_all': num_all,
+            'cust_name': cust_name,
+            'due_date': due_date,
+            'tonyu': tonyu,
+            'inventory': inventory,
+            'afure': afure,
+            'comment': comment
           }
           payload.append(buf)
       res = requests.post(url, json.dumps(payload))
@@ -175,6 +196,7 @@ elif selected_item == 'リスト登録':
       else:
         st.error(f'問題が発生しました(status code: {res.status_code})')
 
+    # 削除ボタン
     delete_button = st.button('選択を削除')
     if delete_button:
       if len(aggrid_data['selected_rows']) > 0:
@@ -189,9 +211,11 @@ elif selected_item == 'リスト登録':
         else:
           st.error(f'問題が発生しました(status code: {res.status_code})')
 
+    # CSVダウンロード
     csv = aggrid_data['data'].to_csv(index=False)
     b64 = base64.b64encode(csv.encode('utf-8-sig')).decode()
-    href = f'<a href="data:application/octet-stream;base64,{b64}" download="result.csv">CSVファイルのダウンロード</a>'
+    t = datetime.datetime.now().isoformat()
+    href = f'<a href="data:application/octet-stream;base64,{b64}" download="result{t}.csv">CSVファイルのダウンロード</a>'
     st.markdown(href, unsafe_allow_html=True)
 
 
