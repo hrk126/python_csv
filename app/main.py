@@ -51,6 +51,7 @@ async def get_data(db: Session=Depends(get_db), day: str=datetime.date.today().i
       's_num': item.num,
       'num_all': item.num_all,
       'm_num': item_master.num,
+      'box': item_master.box,
       'cust_name': item.cust_name,
       'due_date': item.due_date,
       'store': item_master.store,

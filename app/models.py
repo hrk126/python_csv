@@ -14,6 +14,7 @@ class Master(Base):
   k_num = Column(Integer, index=True)
   y_num = Column(Integer, index=True)
   h_num = Column(Integer, index=True)
+  box = Column(String, index=True)
   shuketu = relationship('Shuketu', backref='master')
 
 class Shuketu(Base):

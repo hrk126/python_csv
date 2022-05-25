@@ -31,6 +31,9 @@ if selected_item == '•i”ÔŒŸõ':
     items = res.json()
     if len(items) != 0: 
       df_items = pd.DataFrame(items)
+      df_items = df_items.reindex(columns=[
+        'id', 'ad', 'sup_code', 'sup_name', 'hinban', 'seban', 'store', 'num', 'box', 'k_num', 'y_num', 'h_num'
+      ])
       df_items.rename(
         columns= {
           'ad': '‚©‚ñ‚r‚d‚k‚e',
@@ -42,6 +45,7 @@ if selected_item == '•i”ÔŒŸõ':
           'k_num': '‰ñ“]–‡”',
           'y_num': '“Çæ–‡”',
           'h_num': '”­’–‡”',
+          'box': '” í',
           'sup_name':'d“üæ–¼'
         }, inplace=True
       )
@@ -134,6 +138,7 @@ elif selected_item == 'ƒŠƒXƒg“o˜^':
           'k_num': '‰ñ“]–‡”',
           'y_num': '“Çæ–‡”',
           'h_num': '”­’–‡”',
+          'box': '” í'
         }, inplace=True
       )
     st.session_state.list = df_data

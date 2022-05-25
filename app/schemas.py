@@ -11,6 +11,7 @@ class MasterCreate(BaseModel):
   k_num: int
   y_num: int
   h_num: int
+  box: str
 
 class MasterGet(MasterCreate):
   id: int
