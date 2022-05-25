@@ -36,7 +36,7 @@ def get_masters(db: Session, hinban: str, store: str):
                 models.Master.hinban.contains(hinban),
                 models.Master.store.contains(store)
               )
-            ).all()
+            ).limit(500).all()
   return masters
 
 def get_data(db: Session, day: str):
