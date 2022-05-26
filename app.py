@@ -221,8 +221,8 @@ elif selected_item == 'リスト登録':
     # CSVダウンロード
     csv = aggrid_data['data'].to_csv(index=False)
     b64 = base64.b64encode(csv.encode('utf-8-sig')).decode()
-    t = datetime.datetime.now().isoformat()
-    href = f'<a href="data:application/octet-stream;base64,{b64}" download="result{t}.csv">CSVファイルのダウンロード</a>'
+    d = datetime.date.today().isoformat()
+    href = f'<a href="data:application/octet-stream;base64,{b64}" download="shuketu_list{d}.csv">CSVファイルのダウンロード</a>'
     st.markdown(href, unsafe_allow_html=True)
 
 
