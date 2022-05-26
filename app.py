@@ -1,4 +1,5 @@
 # coding: cp932
+from re import U
 import streamlit as st
 import datetime
 import requests
@@ -7,12 +8,13 @@ import pandas as pd
 from st_aggrid import AgGrid, GridOptionsBuilder, JsCode
 from st_aggrid.shared import GridUpdateMode
 import base64
+import sqlite3
 
 st.set_page_config(layout='wide')
 # ------------------sidebar-----------------------------------------------
 shuketubi = st.sidebar.date_input('日付を入力', value=datetime.date.today())
 bin = st.sidebar.selectbox('便を入力', [1, 2, 3, 4])
-selected_item = st.sidebar.radio('処理を選択', ['リスト登録', '品番検索'])
+selected_item = st.sidebar.radio('処理を選択', ['リスト登録', '品番検索', 'マスタ更新'])
 # ------------------header-------------------------------------------------
 st.title(selected_item)
 # ------------------search-------------------------------------------------
@@ -224,6 +226,102 @@ elif selected_item == 'リスト登録':
     st.markdown(href, unsafe_allow_html=True)
 
 
+elif selected_item == 'マスタ更新':
 
+  db = 'test.db'
 
+  st.markdown('### ● マスタアップロード')
+  file = st.file_uploader('マスタをアップロードしてください.')
+  if file:
+    if file.name == 'master.csv':
+      with open(file.name, 'wb') as f:
+          f.write(file.read())
 
+      df = pd.read_csv('master.csv',
+                    usecols=[1, 4, 6, 7, 8, 9, 26, 27, 29, 45],
+                    dtype = str).fillna(0).astype(
+                      {'かんＳＥＬＦ': str, 
+                        '仕入先': str, 
+                        '収容数': int, 
+                        '回転枚数': int, 
+                        '読取枚数': int, 
+                        '発注枚数': int}
+                      )
+      df.rename(columns={'かんＳＥＬＦ': 'ad',
+                        '仕入先': 'sup_code',
+                        '背番号': 'seban',
+                        '品番': 'hinban',
+                        '収容数': 'num',
+                        'ストアアドレス': 'store',
+                        '回転枚数': 'k_num',
+                        '読取枚数': 'y_num',
+                        '発注枚数': 'h_num',
+                        '箱種': 'box'}, inplace=True)
+      df['seban'] = df['seban'].str.strip()
+      df['hinban'] = df['hinban'].str.strip()
+      df['store'] = df['store'].str.strip()
+      df['box'] = df['box'].str.strip()
+
+      con = sqlite3.connect(db)
+      cur = con.cursor()
+      cur.execute(
+        'DROP TABLE IF EXISTS master'
+      )
+      cur.execute(
+        '''
+        CREATE TABLE master (
+            id INTEGER PRIMARY KEY, 
+            ad TEXT, 
+            sup_code TEXT, 
+            seban TEXT, 
+            hinban TEXT, 
+            num INTEGER, 
+            store TEXT, 
+            k_num INTEGER, 
+            y_num INTEGER, 
+            h_num INTEGER,
+            box TEXT)
+        '''
+      )				
+      df.to_sql('master', con, if_exists='append', index=False)
+      cur.execute(
+          "SELECT * FROM master LIMIT 5"
+      )
+      tables = cur.fetchall()
+      con.close()
+      st.table(tables)
+
+  st.markdown('### ● 仕入先アップロード')
+  file = st.file_uploader('仕入先をアップロードしてください.')
+  if file:
+    if file.name == 'sup.csv':
+      with open(file.name, 'wb') as f:
+          f.write(file.read())
+
+      df_s = pd.read_csv('sup.csv',
+                  usecols=[0, 1],
+                  dtype = str).fillna(0)
+      df_s.rename(columns={'仕入先': 'sup_code','仕入先名': 'sup_name'}, inplace=True)
+
+      df_s['sup_name'] = df_s['sup_name'].str.strip()
+
+      con = sqlite3.connect(db)
+      cur = con.cursor()
+      cur.execute(
+          'DROP TABLE IF EXISTS sup'
+      )
+      cur.execute(
+          '''
+          CREATE TABLE sup (
+              id INTEGER PRIMARY KEY, 
+              sup_code TEXT,
+              sup_name TEXT)
+          '''
+      )
+      df_s.to_sql('sup', con, if_exists='append', index=False)
+      cur.execute(
+          "SELECT * FROM sup LIMIT 5"
+      )
+      tables = cur.fetchall()
+      con.close()
+      st.table(tables)
