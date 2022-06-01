@@ -31,8 +31,13 @@ async def create_data(data: schemas.ShuketuCreate, db: Session=Depends(get_db)):
 async def get_masters(db: Session=Depends(get_db), hinban: str='', store: Optional[str]=''):
   masters = crud.get_masters(db=db, hinban=hinban, store=store)
   for master in masters:
-    master.sup_name = master.sup.sup_name
-    delattr(master,'sup')
+    try:
+      master.sup_name = master.sup.sup_name
+    except:
+      master.sup_name = ''
+      print('error')
+    finally:
+      delattr(master,'sup')
   return masters
 
 @app.get('/data/')
