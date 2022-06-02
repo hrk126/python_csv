@@ -2,3 +2,6 @@ master.csv
 test.db
 sup.csv
 USROUT
+KANOUT
+changed_KANOUT.csv
+changed_USROUT.csv
