@@ -9,6 +9,7 @@ from st_aggrid import AgGrid, GridOptionsBuilder, JsCode
 from st_aggrid.shared import GridUpdateMode
 import base64
 import sqlite3
+import utility as utl
 
 st.set_page_config(layout='wide')
 # ------------------sidebar-----------------------------------------------
@@ -230,38 +231,30 @@ elif selected_item == 'マスタ更新':
 
   db = 'test.db'
 
+  #マスター
   st.markdown('### ● マスタアップロード')
   file = st.file_uploader('マスタをアップロードしてください.')
   if file:
-    if file.name == 'master.csv':
+    if file.name == 'KANOUT':
+      file_name = file.name
+      widths = [1, 5, 1, 1, 5, 2, 4, 14, 5, 8, 5, 1, 10, 4, 5, 2, 1, 3, 6, 2, 4, 8, 5, 6, 4, 8, 4, 3, 4, 4, 8, 4, 4, 4, 5, 5, 5, 5, 5, 5, 8, 1, 1, 2, 1, 8, 10, 8, 12, 1, 3, 1, 9]
+      names = ['aki', 'ad', 'kaitei', 'cp', 'sup_code', 'ukeire', 'seban', 'hinban', 'num', 'store', 'sikyu', 's_kubun', 'line_add', 'aki2', 'shuyoseki', 'tanto', 'iro', 'pocket', 'cycle', 'aki3', 'setteimai', 'setteiryo', 'mai_bin', 'ryo_bin', 'zen_mai', 'zen_ryo', 'k_num', 'y_num', 's_num', 'h_num', 'sohat', 'kinko', 'hakko', 'hakkosumi', 'b_add', 'a_add', 'gai_1', 'gai_2', 'gai_3', 'siharai', 'kigo', 'b_kubun', 'u_kubun', 'mark', 'mark_col', 'box', 'kose', 's_okiba', 'comment', 'sys_kubun', 'shukkaba', 'n_kubun', 'aki4']
+      usecols= [1, 4, 6, 7, 8, 9, 26, 27, 29, 45]
+      fn = {
+        'num': 0,
+        'k_num': 0,
+        'y_num': 0,
+        'h_num': 0,
+        'ad': '',
+        'sup_code': '',
+        'seban': '',
+        'hinban': '',
+        'store': '',
+        'box': ''
+    }
       with open(file.name, 'wb') as f:
           f.write(file.read())
-
-      df = pd.read_csv('master.csv',
-                    usecols=[1, 4, 6, 7, 8, 9, 26, 27, 29, 45],
-                    dtype = str).fillna(0).astype(
-                      {'かんＳＥＬＦ': str, 
-                        '仕入先': str, 
-                        '収容数': int, 
-                        '回転枚数': int, 
-                        '読取枚数': int, 
-                        '発注枚数': int}
-                      )
-      df.rename(columns={'かんＳＥＬＦ': 'ad',
-                        '仕入先': 'sup_code',
-                        '背番号': 'seban',
-                        '品番': 'hinban',
-                        '収容数': 'num',
-                        'ストアアドレス': 'store',
-                        '回転枚数': 'k_num',
-                        '読取枚数': 'y_num',
-                        '発注枚数': 'h_num',
-                        '箱種': 'box'}, inplace=True)
-      df['seban'] = df['seban'].str.strip()
-      df['hinban'] = df['hinban'].str.strip()
-      df['store'] = df['store'].str.strip()
-      df['box'] = df['box'].str.strip()
-
+      df = utl.master2df(file_name, widths, names, usecols, fn)
       con = sqlite3.connect(db)
       cur = con.cursor()
       cur.execute(
@@ -291,20 +284,19 @@ elif selected_item == 'マスタ更新':
       con.close()
       st.table(tables)
 
+  #仕入先マスター
   st.markdown('### ● 仕入先アップロード')
   file = st.file_uploader('仕入先をアップロードしてください.')
   if file:
-    if file.name == 'sup.csv':
+    if file.name == 'USROUT':
+      file_name = file.name
+      widths = [1, 5, 5, 20]
+      names = ['aki', 'ad', 'sup_code', 'sup_name']
+      usecols= [2, 3]
+      fn = 0
       with open(file.name, 'wb') as f:
           f.write(file.read())
-
-      df_s = pd.read_csv('sup.csv',
-                  usecols=[0, 1],
-                  dtype = str).fillna(0)
-      df_s.rename(columns={'仕入先': 'sup_code','仕入先名': 'sup_name'}, inplace=True)
-
-      df_s['sup_name'] = df_s['sup_name'].str.strip()
-
+      df = utl.master2df(file_name, widths, names, usecols, fn)
       con = sqlite3.connect(db)
       cur = con.cursor()
       cur.execute(
@@ -318,7 +310,7 @@ elif selected_item == 'マスタ更新':
               sup_name TEXT)
           '''
       )
-      df_s.to_sql('sup', con, if_exists='append', index=False)
+      df.to_sql('sup', con, if_exists='append', index=False)
       cur.execute(
           "SELECT * FROM sup LIMIT 5"
       )
