@@ -308,43 +308,30 @@ elif selected_item == 'マスタ更新':
   file = st.file_uploader('発注累積をアップロードしてください.')
   if file:
     if file.name == 'RUIOUT':
+      d = 3
       with open(file.name, 'wb') as f:
           f.write(file.read())
-      df = utl.ruiout2df()
+      df = utl.ruiout2df(d)
       drop = 'DROP TABLE IF EXISTS rui'
-      create = '''
-                CREATE TABLE rui (
-                  id INTEGER PRIMARY KEY, 
-                  ad TEXT,
-                  n_bi0 TEXT,
-                  n_bin0 TEXT,
-                  h_kubun0 TEXT,
-                  h_bi0 TEXT,
-                  h_bin0 TEXT,
-                  h_jikan0 TEXT,
-                  noban0 TEXT,
-                  hako0 INTEGER,
-                  nonyu0 INTEGER,
-                  n_bi1 TEXT,
-                  n_bin1 TEXT,
-                  h_kubun1 TEXT,
-                  h_bi1 TEXT,
-                  h_bin1 TEXT,
-                  h_jikan1 TEXT,
-                  noban1 TEXT,
-                  hako1 INTEGER,
-                  nonyu1 INTEGER,
-                  n_bi2 TEXT,
-                  n_bin2 TEXT,
-                  h_kubun2 TEXT,
-                  h_bi2 TEXT,
-                  h_bin2 TEXT,
-                  h_jikan2 TEXT,
-                  noban2 TEXT,
-                  hako2 INTEGER,
-                  nonyu2 INTEGER
-                )
-               '''
+      s = ''
+      for i in range(d):
+          s += f'''
+              n_bi{i} TEXT,
+              n_bin{i} TEXT,
+              h_kubun{i} TEXT,
+              h_bi{i} TEXT,
+              h_bin{i} TEXT,
+              h_jikan{i} TEXT,
+              noban{i} TEXT,
+              hako{i} INTEGER,
+              nonyu{i} INTEGER,'''
+      s = s[:-1]
+      create = f'''
+          CREATE TABLE rui (
+              id INTEGER PRIMARY KEY, 
+              ad TEXT,{s}
+          )
+          '''
       table_name = 'rui'
       tables = utl.df2table(db, df, drop, create, table_name)
       st.table(tables)
