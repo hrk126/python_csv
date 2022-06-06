@@ -3,5 +3,7 @@ test.db
 sup.csv
 USROUT
 KANOUT
+RUIOUT
 changed_KANOUT.csv
 changed_USROUT.csv
+changed_RUIOUT.csv

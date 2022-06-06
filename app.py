@@ -12,12 +12,15 @@ import sqlite3
 import utility as utl
 
 st.set_page_config(layout='wide')
+
 # ------------------sidebar-----------------------------------------------
 shuketubi = st.sidebar.date_input('日付を入力', value=datetime.date.today())
 bin = st.sidebar.selectbox('便を入力', [1, 2, 3, 4])
 selected_item = st.sidebar.radio('処理を選択', ['リスト登録', '品番検索', 'マスタ更新'])
+
 # ------------------header-------------------------------------------------
 st.title(selected_item)
+
 # ------------------search-------------------------------------------------
 if selected_item == '品番検索':
 
@@ -109,7 +112,7 @@ if selected_item == '品番検索':
         else:
           st.error(f'問題が発生しました(status code: {res.status_code})')
 
-# ------------------list-------------------------------------------------
+# ------------------list---------------------------------------------------
 elif selected_item == 'リスト登録':
 
   q = f'?day={shuketubi.isoformat()}'
@@ -226,13 +229,13 @@ elif selected_item == 'リスト登録':
     href = f'<a href="data:application/octet-stream;base64,{b64}" download="shuketu_list{d}.csv">CSVファイルのダウンロード</a>'
     st.markdown(href, unsafe_allow_html=True)
 
-
+# ------------------master-------------------------------------------------
 elif selected_item == 'マスタ更新':
 
   db = 'test.db'
 
-  #マスター
-  st.markdown('### ● マスタアップロード')
+  #マスタ
+  st.markdown('### ● マスタアップロード(KANOUT)')
   file = st.file_uploader('マスタをアップロードしてください.')
   if file:
     if file.name == 'KANOUT':
@@ -251,69 +254,97 @@ elif selected_item == 'マスタ更新':
         'hinban': '',
         'store': '',
         'box': ''
-    }
+      }
       with open(file.name, 'wb') as f:
           f.write(file.read())
       df = utl.master2df(file_name, widths, names, usecols, fn)
-      con = sqlite3.connect(db)
-      cur = con.cursor()
-      cur.execute(
-        'DROP TABLE IF EXISTS master'
-      )
-      cur.execute(
-        '''
-        CREATE TABLE master (
-            id INTEGER PRIMARY KEY, 
-            ad TEXT, 
-            sup_code TEXT, 
-            seban TEXT, 
-            hinban TEXT, 
-            num INTEGER, 
-            store TEXT, 
-            k_num INTEGER, 
-            y_num INTEGER, 
-            h_num INTEGER,
-            box TEXT)
-        '''
-      )				
-      df.to_sql('master', con, if_exists='append', index=False)
-      cur.execute(
-          "SELECT * FROM master LIMIT 5"
-      )
-      tables = cur.fetchall()
-      con.close()
+      drop = 'DROP TABLE IF EXISTS master'
+      create = '''
+                CREATE TABLE master (
+                  id INTEGER PRIMARY KEY, 
+                  ad TEXT, 
+                  sup_code TEXT, 
+                  seban TEXT, 
+                  hinban TEXT, 
+                  num INTEGER, 
+                  store TEXT, 
+                  k_num INTEGER, 
+                  y_num INTEGER, 
+                  h_num INTEGER,
+                  box TEXT
+                )
+               '''
+      table_name = 'master'
+      tables = utl.df2table(db, df, drop, create, table_name)
       st.table(tables)
 
-  #仕入先マスター
-  st.markdown('### ● 仕入先アップロード')
+  #仕入先マスタ
+  st.markdown('### ● 仕入先アップロード(USROUT)')
   file = st.file_uploader('仕入先をアップロードしてください.')
   if file:
     if file.name == 'USROUT':
       file_name = file.name
-      widths = [1, 5, 5, 20]
-      names = ['aki', 'ad', 'sup_code', 'sup_name']
-      usecols= [2, 3]
+      widths = [6, 5, 20]
+      names = ['ad', 'sup_code', 'sup_name']
+      usecols= [1, 2]
       fn = 0
       with open(file.name, 'wb') as f:
           f.write(file.read())
       df = utl.master2df(file_name, widths, names, usecols, fn)
-      con = sqlite3.connect(db)
-      cur = con.cursor()
-      cur.execute(
-          'DROP TABLE IF EXISTS sup'
-      )
-      cur.execute(
-          '''
-          CREATE TABLE sup (
-              id INTEGER PRIMARY KEY, 
-              sup_code TEXT,
-              sup_name TEXT)
-          '''
-      )
-      df.to_sql('sup', con, if_exists='append', index=False)
-      cur.execute(
-          "SELECT * FROM sup LIMIT 5"
-      )
-      tables = cur.fetchall()
-      con.close()
+      drop = 'DROP TABLE IF EXISTS sup'
+      create = '''
+                CREATE TABLE sup (
+                  id INTEGER PRIMARY KEY, 
+                  sup_code TEXT,
+                  sup_name TEXT
+                )
+               '''
+      table_name = 'sup'
+      tables = utl.df2table(db, df, drop, create, table_name)
+      st.table(tables)
+
+  #累積マスタ
+  st.markdown('### ● 発注累積アップロード(RUIOUT)')
+  file = st.file_uploader('発注累積をアップロードしてください.')
+  if file:
+    if file.name == 'RUIOUT':
+      with open(file.name, 'wb') as f:
+          f.write(file.read())
+      df = utl.ruiout2df()
+      drop = 'DROP TABLE IF EXISTS rui'
+      create = '''
+                CREATE TABLE rui (
+                  id INTEGER PRIMARY KEY, 
+                  ad TEXT,
+                  n_bi0 TEXT,
+                  n_bin0 TEXT,
+                  h_kubun0 TEXT,
+                  h_bi0 TEXT,
+                  h_bin0 TEXT,
+                  h_jikan0 TEXT,
+                  noban0 TEXT,
+                  hako0 INTEGER,
+                  nonyu0 INTEGER,
+                  n_bi1 TEXT,
+                  n_bin1 TEXT,
+                  h_kubun1 TEXT,
+                  h_bi1 TEXT,
+                  h_bin1 TEXT,
+                  h_jikan1 TEXT,
+                  noban1 TEXT,
+                  hako1 INTEGER,
+                  nonyu1 INTEGER,
+                  n_bi2 TEXT,
+                  n_bin2 TEXT,
+                  h_kubun2 TEXT,
+                  h_bi2 TEXT,
+                  h_bin2 TEXT,
+                  h_jikan2 TEXT,
+                  noban2 TEXT,
+                  hako2 INTEGER,
+                  nonyu2 INTEGER
+                )
+               '''
+      table_name = 'rui'
+      tables = utl.df2table(db, df, drop, create, table_name)
       st.table(tables)
