@@ -39,9 +39,8 @@ def master2df(file_name, widths, names, usecols, fn):
     return df
 
 #RUIOUT—p
-def ruiout2df():
+def ruiout2df(d):
   file_name = 'RUIOUT'
-  d = 3
 
   with open(file_name, 'r', encoding='cp932') as f:
     content = ''
@@ -67,7 +66,7 @@ def ruiout2df():
   astype = {}
   for i in range(d):
     widths += meisai_width
-    m_name = [f'n_bi{i}', f'n_bin{i}', f'h_kubun{i}', f'h_bi{i}', f'h_bin{i}', f'h_jikan{i}', f'noban{i}', f'hako{i}', f'nonyu{i}']
+    m_name = [f'n_bi{i}', f'n_bin{i}', f'h_kubun{i}', f'h_bi{i}', f'h_bin{i}', f'h_jikan{i}', f'noban{i}', f'hako{i}', f'nonyu{i}', f'aki{i}']
     names += m_name
     usecols += [j + 10 * i for j in m_cols]
     astype[f'hako{i}'] = int
