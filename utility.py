@@ -38,7 +38,7 @@ def master2df(file_name, widths, names, usecols, fn):
     
     return df
 
-#RUIOUTóp
+#RUIOUTópDFçÏê¨
 def ruiout2df(d):
   file_name = 'RUIOUT'
 

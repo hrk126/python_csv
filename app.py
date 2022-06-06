@@ -35,7 +35,7 @@ if selected_item == '品番検索':
     url = f'http://127.0.0.1:8000/masters/{q}'
     res = requests.get(url)
     items = res.json()
-    if len(items) != 0: 
+    if len(items) != 0:
       df_items = pd.DataFrame(items)
       df_items = df_items.reindex(columns=[
         'id', 'ad', 'sup_code', 'sup_name', 'hinban', 'seban', 'store', 'num', 'box', 'k_num', 'y_num', 'h_num'
@@ -61,7 +61,7 @@ if selected_item == '品番検索':
         del st.session_state.df
       st.write('見つかりませんでした')
 
-  if 'df' in st.session_state: 
+  if 'df' in st.session_state:
 
     gb = GridOptionsBuilder.from_dataframe(st.session_state.df)
     # gb.configure_default_column(editable=True)
@@ -72,7 +72,7 @@ if selected_item == '品番検索':
         gridOptions=gb.build(),
         allow_unsafe_jscode=True,
         enable_enterprise_modules=True,
-        update_mode=GridUpdateMode.MODEL_CHANGED
+        update_mode=GridUpdateMode.SELECTION_CHANGED
     )
 
     if len(aggrid_data['selected_rows']) == 1:
@@ -144,7 +144,13 @@ elif selected_item == 'リスト登録':
           'k_num': '回転枚数',
           'y_num': '読取枚数',
           'h_num': '発注枚数',
-          'box': '箱種'
+          'box': '箱種',
+          'd0': '納入日1',
+          'hako0': '納入箱数1',
+          'd1': '納入日2',
+          'hako1': '納入箱数2',
+          'd2': '納入日3',
+          'hako2': '納入箱数3',
         }, inplace=True
       )
     st.session_state.list = df_data
@@ -308,7 +314,7 @@ elif selected_item == 'マスタ更新':
   file = st.file_uploader('発注累積をアップロードしてください.')
   if file:
     if file.name == 'RUIOUT':
-      d = 3
+      d = 3 #(3日分固定)
       with open(file.name, 'wb') as f:
           f.write(file.read())
       df = utl.ruiout2df(d)
