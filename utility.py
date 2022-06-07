@@ -11,7 +11,6 @@ def add_space_if_fw(text):
 
 #マスターからDF作成
 def master2df(file_name, widths, names, usecols, fn):
-
     with open(file_name, 'r', encoding='cp932') as f:
         content = f.read()
 
@@ -40,41 +39,41 @@ def master2df(file_name, widths, names, usecols, fn):
 
 #RUIOUT用DF作成
 def ruiout2df(d):
-  file_name = 'RUIOUT'
+    file_name = 'RUIOUT'
 
-  with open(file_name, 'r', encoding='cp932') as f:
-    content = ''
-    while True:
-      line = f.readline()
-      if line == '':
-        break
-      b_line = line[:5]
-      st_line = d * 40 + 77 + 1
-      a_line = line[-st_line:-78]
-      content += b_line + a_line + '\n'
+    with open(file_name, 'r', encoding='cp932') as f:
+        content = ''
+        while True:
+            line = f.readline()
+            if line == '':
+                break
+            b_line = line[:5]
+            st_line = d * 40 + 77 + 1
+            a_line = line[-st_line:-78]
+            content += b_line + a_line + '\n'
 
-  file_name_changed = f'changed_{file_name}.csv'
+    file_name_changed = f'changed_{file_name}.csv'
 
-  with open(file_name_changed, mode='w', encoding='UTF-8') as f:
-      f.write(content)
+    with open(file_name_changed, mode='w', encoding='UTF-8') as f:
+        f.write(content)
 
-  widths = [5]
-  names = ['ad']
-  meisai_width = [6, 2, 1, 6, 2, 4, 5, 3, 6, 5]
-  usecols = [0]
-  m_cols = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-  astype = {}
-  for i in range(d):
-    widths += meisai_width
-    m_name = [f'n_bi{i}', f'n_bin{i}', f'h_kubun{i}', f'h_bi{i}', f'h_bin{i}', f'h_jikan{i}', f'noban{i}', f'hako{i}', f'nonyu{i}', f'aki{i}']
-    names += m_name
-    usecols += [j + 10 * i for j in m_cols]
-    astype[f'hako{i}'] = int
-    astype[f'nonyu{i}'] = int
+    widths = [5]
+    names = ['ad']
+    meisai_width = [6, 2, 1, 6, 2, 4, 5, 3, 6, 5]
+    usecols = [0]
+    m_cols = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    astype = {}
+    for i in range(d):
+        widths += meisai_width
+        m_name = [f'n_bi{i}', f'n_bin{i}', f'h_kubun{i}', f'h_bi{i}', f'h_bin{i}', f'h_jikan{i}', f'noban{i}', f'hako{i}', f'nonyu{i}', f'aki{i}']
+        names += m_name
+        usecols += [j + 10 * i for j in m_cols]
+        astype[f'hako{i}'] = int
+        astype[f'nonyu{i}'] = int
 
-  df = pd.read_fwf(file_name_changed, widths=widths, names=names, usecols=usecols, encoding='UTF-8', dtype = str).fillna(0)
-  df = df.astype(astype)
-  return df
+    df = pd.read_fwf(file_name_changed, widths=widths, names=names, usecols=usecols, encoding='UTF-8', dtype = str).fillna(0)
+    df = df.astype(astype)
+    return df
 
 #DFからtable作成
 def df2table(db, df, drop, create, table_name):
