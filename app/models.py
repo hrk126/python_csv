@@ -39,6 +39,7 @@ class Sup(Base):
     sup_code = Column(String, index=True)
     sup_name = Column(String, index=True)
     master = relationship('Master', backref='sup')
+    
 class Rui(Base):
     __tablename__ = 'rui'
     id = Column(Integer, primary_key=True, autoincrement=True, index=True)

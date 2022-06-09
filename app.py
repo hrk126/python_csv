@@ -13,6 +13,19 @@ import utility as utl
 
 st.set_page_config(layout='wide')
 
+styl = """
+<style>
+    h1 {
+        padding: 0.25em 0.5em;
+        color: #494949;
+        background: transparent;
+        border-left: solid 5px #7db4e6;
+        margin-bottom: 20px;
+    }
+</style>
+"""
+st.markdown(styl, unsafe_allow_html=True)
+
 # ------------------sidebar-----------------------------------------------
 shuketubi = st.sidebar.date_input('日付を入力', value=datetime.date.today())
 bin = st.sidebar.selectbox('便を入力', [1, 2, 3, 4])
@@ -26,7 +39,7 @@ if selected_item == '品番検索':
     with st.sidebar.form(key='item'):
         hinban: str = st.text_input('品番')
         store: str = st.text_input('置場')
-        submit_button = st.form_submit_button(label='送信')   
+        submit_button = st.form_submit_button(label='検索')   
     if submit_button:
         q = f'?hinban={hinban}&store={store}'
         url = f'http://127.0.0.1:8000/masters/{q}'
@@ -67,7 +80,8 @@ if selected_item == '品番検索':
             gridOptions=gb.build(),
             allow_unsafe_jscode=True,
             enable_enterprise_modules=True,
-            update_mode=GridUpdateMode.SELECTION_CHANGED
+            update_mode=GridUpdateMode.SELECTION_CHANGED,
+            theme='blue'
         ) 
         if len(aggrid_data['selected_rows']) == 1:    
             st.write('追加情報を入力')
@@ -102,7 +116,6 @@ if selected_item == '品番検索':
                     st.success('登録しました')
                 else:
                     st.error(f'問題が発生しました(status code: {res.status_code})')
-
 # ------------------list---------------------------------------------------
 elif selected_item == 'リスト登録':
     q = f'?day={shuketubi.isoformat()}'
@@ -114,17 +127,17 @@ elif selected_item == 'リスト登録':
         df_data.rename(
             columns= {
                 'id': 'ID',
-                's_num': '集欠数',
-                'num_all': '集欠数_全体',
-                'cust_name': '得意先名',
-                'due_date': '期日',
-                'tonyu': '投入数',
-                'inventory': '在庫数',
-                'afure': 'あふれ数',
-                'shuketubi': '集欠日',
-                'bin': '集欠便',
-                'comment': 'コメント',
-                'ad': 'かんＳＥＬＦ',
+                's_num': '● 集欠数',
+                'num_all': '● 集欠数_全体',
+                'cust_name': '● 得意先名',
+                'due_date': '● 期日',
+                'tonyu': '● 投入数',
+                'inventory': '● 在庫数',
+                'afure': '● あふれ数',
+                'shuketubi': '● 集欠日',
+                'bin': '● 集欠便',
+                'comment': '● コメント',
+                'ad': '● かんＳＥＬＦ',
                 'sup_code': '仕入先',
                 'sup_name': '仕入先名',
                 'seban': '背番号',
@@ -158,7 +171,8 @@ elif selected_item == 'リスト登録':
             gridOptions=gb.build(),
             allow_unsafe_jscode=True,
             enable_enterprise_modules=True,
-            update_mode=GridUpdateMode.MODEL_CHANGED
+            update_mode=GridUpdateMode.MODEL_CHANGED,
+            theme='blue'
         )
         # 修正ボタン
         change_button = st.button('修正内容を登録')
@@ -220,7 +234,6 @@ elif selected_item == 'リスト登録':
         d = datetime.date.today().isoformat()
         href = f'<a href="data:application/octet-stream;base64,{b64}" download="shuketu_list{d}.csv">CSVファイルのダウンロード</a>'
         st.markdown(href, unsafe_allow_html=True)
-
 # ------------------master-------------------------------------------------
 elif selected_item == 'マスタ更新':
     #DB設定
