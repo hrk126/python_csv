@@ -1,6 +1,7 @@
 import pandas as pd
 import unicodedata
 import sqlite3
+from numpy import int64
 
 #全角文字にスペース付与
 def add_space_if_fw(text):
@@ -29,7 +30,7 @@ def master2df(file_name, widths, names, usecols, fn):
     if file_name == 'USROUT':
         df['sup_name'] = df['sup_name'].str.strip()
     elif file_name == 'KANOUT':
-        df = df.astype({'num': int, 'k_num': int, 'y_num': int, 'h_num': int})
+        df = df.astype({'num': int64, 'k_num': int64, 'y_num': int64, 'h_num': int64})
         df['seban'] = df['seban'].str.strip()
         df['hinban'] = df['hinban'].str.strip()
         df['store'] = df['store'].str.strip()
@@ -68,8 +69,8 @@ def ruiout2df(d):
         m_name = [f'n_bi{i}', f'n_bin{i}', f'h_kubun{i}', f'h_bi{i}', f'h_bin{i}', f'h_jikan{i}', f'noban{i}', f'hako{i}', f'nonyu{i}', f'aki{i}']
         names += m_name
         usecols += [j + 10 * i for j in m_cols]
-        astype[f'hako{i}'] = int
-        astype[f'nonyu{i}'] = int
+        astype[f'hako{i}'] = int64
+        astype[f'nonyu{i}'] = int64
 
     df = pd.read_fwf(file_name_changed, widths=widths, names=names, usecols=usecols, encoding='UTF-8', dtype = str).fillna(0)
     df = df.astype(astype)

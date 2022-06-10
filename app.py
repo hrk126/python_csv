@@ -1,5 +1,6 @@
 # coding: cp932
 from re import U
+from numpy import int64
 import streamlit as st
 import datetime
 import requests
@@ -22,14 +23,17 @@ styl = """
         border-left: solid 5px #7db4e6;
         margin-bottom: 20px;
     }
+    #as {
+        color: green;
+    }
 </style>
 """
 st.markdown(styl, unsafe_allow_html=True)
 
 # ------------------sidebar-----------------------------------------------
-shuketubi = st.sidebar.date_input('日付を入力', value=datetime.date.today())
-bin = st.sidebar.selectbox('便を入力', [1, 2, 3, 4])
-selected_item = st.sidebar.radio('処理を選択', ['リスト登録', '品番検索', 'マスタ更新'])
+shuketubi = st.sidebar.date_input('日付を入力:', value=datetime.date.today())
+bin = st.sidebar.selectbox('便を入力:', [1, 2, 3, 4])
+selected_item = st.sidebar.radio('処理を選択:', ['リスト登録', '品番検索', 'マスタ更新'])
 
 # ------------------header-------------------------------------------------
 st.title(selected_item)
@@ -37,8 +41,8 @@ st.title(selected_item)
 # ------------------search-------------------------------------------------
 if selected_item == '品番検索':
     with st.sidebar.form(key='item'):
-        hinban: str = st.text_input('品番')
-        store: str = st.text_input('置場')
+        hinban: str = st.text_input('品番:')
+        store: str = st.text_input('置場:')
         submit_button = st.form_submit_button(label='検索')   
     if submit_button:
         q = f'?hinban={hinban}&store={store}'
@@ -154,6 +158,9 @@ elif selected_item == 'リスト登録':
                 'hako1': '納入箱数2',
                 'd2': '納入日3',
                 'hako2': '納入箱数3',
+                'n0': '内示(当月)',
+                'n1': '内示(翌月)',
+                'n2': '内示(翌々月)'
             }, inplace=True
         )
         st.session_state.list = df_data
@@ -183,17 +190,17 @@ elif selected_item == 'リスト登録':
             payload = []
             for id, ad, shuketubi, bin, num, num_all, cust_name, due_date, tonyu, inventory, afure, comment in \
             zip(df['ID'],
-                df['かんＳＥＬＦ'],
-                df['集欠日'],
-                df['集欠便'],
-                df['集欠数'],
-                df['集欠数_全体'],
-                df['得意先名'],
-                df['期日'],
-                df['投入数'],
-                df['在庫数'],
-                df['あふれ数'],
-                df['コメント']):
+                df['● かんＳＥＬＦ'],
+                df['● 集欠日'],
+                df['● 集欠便'],
+                df['● 集欠数'],
+                df['● 集欠数_全体'],
+                df['● 得意先名'],
+                df['● 期日'],
+                df['● 投入数'],
+                df['● 在庫数'],
+                df['● あふれ数'],
+                df['● コメント']):
                 buf = {
                   'id': id,
                   'ad': ad,
@@ -336,4 +343,49 @@ elif selected_item == 'マスタ更新':
                 '''
             table_name = 'rui'
             tables = utl.df2table(db, df, drop, create, table_name)
-            st.table(tables)    
+            st.table(tables)
+    #AS
+    st.markdown('### ● AS内示アップロード(エクセル)')
+    file = st.file_uploader('かんばんメンテナンスリストをアップロードしてください.',
+                            type=['xls', 'xlsx', 'xlsm'],
+                            accept_multiple_files=True)
+    seisan = 'かんばんメンテナンスリスト生産'
+    gyoumu = 'かんばんメンテナンスリスト業務'
+    if len(file) == 2:
+        if seisan in file[0].name and gyoumu in file[1].name or \
+            gyoumu in file[0].name and seisan in file[1].name:
+            names = ['ad', 'n0', 'n1', 'n2']
+            ex0 = pd.read_excel(file[0],
+                sheet_name=0,
+                header=None,
+                names=names,
+                usecols=[3, 7, 8, 9],
+                skiprows=[0, 1],
+                dtype=str
+                )
+            ex1 = pd.read_excel(file[1],
+                sheet_name=0,
+                header=None,
+                names=names,
+                usecols=[3, 7, 8, 9],
+                skiprows=[0, 1],
+                dtype=str
+                )
+            df = pd.concat([ex0, ex1]).fillna('')
+            df = df.astype({'n0': int64, 'n1': int64, 'n2': int64})
+            drop = 'DROP TABLE IF EXISTS naiji'
+            create = '''
+                        CREATE TABLE naiji (
+                            id INTEGER PRIMARY KEY, 
+                            ad TEXT,
+                            n0 INTEGER,
+                            n1 INTEGER,
+                            n2 INTEGER
+                        )
+                    '''
+            table_name = 'naiji'
+            tables = utl.df2table(db, df, drop, create, table_name)
+            st.table(tables)
+    #ストアキャパ
+    st.markdown('### ● ストアキャパアップロード(エクセル)')
+    

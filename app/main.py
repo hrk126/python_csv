@@ -48,6 +48,7 @@ async def get_data(db: Session=Depends(get_db), day: str=datetime.date.today().i
         item_master = item.master
         master_sup = item_master.sup
         master_rui = item_master.rui
+        master_naiji = item_master.naiji
         d0 = '20' + master_rui.n_bi0
         d1 = '20' + master_rui.n_bi1
         d2 = '20' + master_rui.n_bi2
@@ -80,6 +81,9 @@ async def get_data(db: Session=Depends(get_db), day: str=datetime.date.today().i
             'hako1': master_rui.hako1,
             'd2': d2[:4] + '-' + d2[4:6] + '-' + d2[6:],
             'hako2': master_rui.hako2,
+            'n0': master_naiji.n0,
+            'n1': master_naiji.n1,
+            'n2': master_naiji.n2
         }
         all_data.append(buf)
     return all_data

@@ -17,6 +17,7 @@ class Master(Base):
     box = Column(String, index=True)
     shuketu = relationship('Shuketu', backref='master')
     rui = relationship('Rui', uselist=False)
+    naiji = relationship('Naiji', uselist=False)
 
 class Shuketu(Base):
     __tablename__ = 'shuketu'
@@ -71,3 +72,11 @@ class Rui(Base):
     noban2 = Column(String)
     hako2 = Column(Integer)
     nonyu2 = Column(Integer)
+
+class Naiji(Base):
+    __tablename__ = 'naiji'
+    id = Column(Integer, primary_key=True, autoincrement=True, index=True)
+    ad = Column(String, ForeignKey('master.ad', ondelete="CASCADE"), index=True, unique=True)
+    n0 = Column(Integer)
+    n1 = Column(Integer)
+    n2 = Column(Integer)
