@@ -1,7 +1,9 @@
+# coding: cp932
 import pandas as pd
 import unicodedata
 import sqlite3
 from numpy import int64
+import re
 
 #全角文字にスペース付与
 def add_space_if_fw(text):
@@ -90,3 +92,21 @@ def df2table(db, df, drop, create, table_name):
     tables = cur.fetchall()
     con.close()
     return tables
+
+#ストア管理表確認
+def check_store_kanrihyo(file_list):
+    if len(file_list) != 4:
+        return False
+    l = []
+    for file in file_list:
+        m = re.match(r'(.+ストア管理表).+', file.name)
+        if m:
+            s = m.groups()
+            if s not in l:
+                l.append(s)
+    if len(l) == 4:
+        return True
+    else:
+        return False
+
+

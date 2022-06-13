@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from . import crud, models, schemas
 from .database import SessionLocal, engine
 import datetime
+import re
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -52,6 +53,14 @@ async def get_data(db: Session=Depends(get_db), day: str=datetime.date.today().i
         d0 = '20' + master_rui.n_bi0
         d1 = '20' + master_rui.n_bi1
         d2 = '20' + master_rui.n_bi2
+        try:
+            m = re.search(r'(TP|RG)(\d{3})', item_master.box)
+            if m:
+                box = 't' + m.group(2)
+                master_capa = item_master.capa
+                c = getattr(master_capa, box) * master_capa.retu
+        except:
+            c = 0
         buf = {
             'id': item.id,
             'ad': item.ad,
@@ -83,7 +92,8 @@ async def get_data(db: Session=Depends(get_db), day: str=datetime.date.today().i
             'hako2': master_rui.hako2,
             'n0': master_naiji.n0,
             'n1': master_naiji.n1,
-            'n2': master_naiji.n2
+            'n2': master_naiji.n2,
+            'capa': c
         }
         all_data.append(buf)
     return all_data

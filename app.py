@@ -23,7 +23,7 @@ styl = """
         border-left: solid 5px #7db4e6;
         margin-bottom: 20px;
     }
-    #as {
+    #as , #capa{
         color: green;
     }
 </style>
@@ -160,7 +160,8 @@ elif selected_item == 'リスト登録':
                 'hako2': '納入箱数3',
                 'n0': '内示(当月)',
                 'n1': '内示(翌月)',
-                'n2': '内示(翌々月)'
+                'n2': '内示(翌々月)',
+                'capa': '置場スペース'
             }, inplace=True
         )
         st.session_state.list = df_data
@@ -371,7 +372,7 @@ elif selected_item == 'マスタ更新':
                 skiprows=[0, 1],
                 dtype=str
                 )
-            df = pd.concat([ex0, ex1]).fillna('')
+            df = pd.concat([ex0, ex1], ignore_index=True).fillna('')
             df = df.astype({'n0': int64, 'n1': int64, 'n2': int64})
             drop = 'DROP TABLE IF EXISTS naiji'
             create = '''
@@ -387,5 +388,38 @@ elif selected_item == 'マスタ更新':
             tables = utl.df2table(db, df, drop, create, table_name)
             st.table(tables)
     #ストアキャパ
-    st.markdown('### ● ストアキャパアップロード(エクセル)')
-    
+    st.markdown('### ● ストアcapaアップロード(エクセル)')
+    files = st.file_uploader('ストア管理表をアップロードしてください.',
+                            type=['xls', 'xlsx', 'xlsm'],
+                            accept_multiple_files=True)
+    if utl.check_store_kanrihyo(files):
+        names = ['store', 't131', 't331', 't332', 't342', 'retu']
+        exs = []
+        for file in files:
+            ex = pd.read_excel(file,
+                header=None,
+                names=names,
+                usecols=[1, 2, 3, 4, 5, 8],
+                skiprows=[0, 1, 2, 3, 4],
+                dtype=str
+                )
+            exs.append(ex)
+        df = pd.concat(exs, ignore_index=True).dropna()
+        df = df[df['store'] != '↓']
+        df = df.astype({'t131': int64, 't331': int64, 't332': int64, 't342': int64, 'retu': int64})
+        drop = 'DROP TABLE IF EXISTS capa'
+        create = '''
+                    CREATE TABLE capa (
+                        id INTEGER PRIMARY KEY, 
+                        store TEXT,
+                        t131 INTEGER,
+                        t331 INTEGER,
+                        t332 INTEGER,
+                        t342 INTEGER,
+                        retu INTEGER
+                    )
+                '''
+        table_name = 'capa'
+        tables = utl.df2table(db, df, drop, create, table_name)
+        st.table(tables)
+
