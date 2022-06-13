@@ -26,10 +26,6 @@ def create_data(db: Session, data: schemas.ShuketuCreate):
 	return new_data
 
 # read
-# def get_master(db: Session, id: int):
-#   re_master = db.query(models.Master).filter(models.Master.id == id).first()
-#   return re_master
-
 def get_masters(db: Session, hinban: str, store: str):
 	masters = db.query(models.Master).filter(
 	        	and_(
@@ -49,7 +45,7 @@ def get_data(db: Session, day: str):
 def update_data(db: Session, data: List[schemas.ShuketuGet]):
 	try:
 		for item in data:
-			change_data = db.query(models.Shuketu).filter(models.Shuketu.id == item.id).first()
+			change_data = db.query(models.Shuketu).filter(models.Shuketu.id == item.id).one()
 			change_data.ad = item.ad
 			change_data.num = item.num
 			change_data.num_all = item.num_all
@@ -64,16 +60,18 @@ def update_data(db: Session, data: List[schemas.ShuketuGet]):
 			db.commit()
 			db.refresh(change_data)
 		return True
-	except:
+	except Exception as e:
+		print(e)
 		return False
 
 # delete
 def delete_data(db: Session, data: List[int]):
 	try:
 		for item in data:
-			d_data = db.query(models.Shuketu).filter(models.Shuketu.id == item).first()
+			d_data = db.query(models.Shuketu).filter(models.Shuketu.id == item).one()
 			db.delete(d_data)
 			db.commit()
 		return True
-	except:
+	except Exception as e:
+		print(e)
 		return False

@@ -89,13 +89,13 @@ if selected_item == '品番検索':
         ) 
         if len(aggrid_data['selected_rows']) == 1:    
             st.write('追加情報を入力')
-            num: int = st.text_input('集欠数', value=0)
-            num_all: int = st.text_input('集欠数_全体', value=0)
+            num: int = st.number_input('集欠数', value=0, min_value=0)
+            num_all: int = st.number_input('集欠数_全体', value=0, min_value=0)
             cust_name: str = st.text_input('得意先名', value='')
             due_date: datetime.date = st.date_input('期日', value=datetime.date.today())
-            tonyu: int = st.text_input('投入数', value=0)
-            inventory: int = st.text_input('在庫数', value=0)
-            afure: int = st.text_input('あふれ数', value=0)
+            tonyu: int = st.number_input('投入数', value=0, min_value=0)
+            inventory: int = st.number_input('在庫数', value=0, min_value=0)
+            afure: int = st.number_input('あふれ数', value=0, min_value=0)
             comment: str = st.text_input('コメント', value='')  
             register_button = st.button('選択した品番を登録')   
             if register_button:
