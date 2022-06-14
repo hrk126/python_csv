@@ -50,17 +50,18 @@ async def get_data(db: Session=Depends(get_db), day: str=datetime.date.today().i
         d1 = '20' + master_rui.n_bi1
         d2 = '20' + master_rui.n_bi2
         # 内示
+        n_0 = 0
+        n_1 = 0
+        n_2 = 0
         try:
             master_naiji = item_master.naiji
             n_0 = master_naiji.n0
             n_1 = master_naiji.n1
             n_2 = master_naiji.n2
         except Exception as e:
-            n_0 = 0
-            n_1 = 0
-            n_2 = 0
             print(e)
         # ストアキャパ
+        store_capa = 0
         try:
             m = re.search(r'(TP|RG)(\d{3})', item_master.box)
             if m:
@@ -68,7 +69,6 @@ async def get_data(db: Session=Depends(get_db), day: str=datetime.date.today().i
                 master_capa = item_master.capa
                 store_capa = getattr(master_capa, box) * master_capa.retu
         except Exception as e:
-            store_capa = 0
             print(e)
         buf = {
             'id': item.id,

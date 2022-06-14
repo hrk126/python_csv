@@ -296,9 +296,9 @@ elif selected_item == 'マスタ更新':
         if file.name == 'USROUT':
             file_name = file.name
             widths = [6, 5, 20]
-            names = ['ad', 'sup_code', 'sup_name']
+            names = ['aki', 'sup_code', 'sup_name']
             usecols= [1, 2]
-            fn = 0
+            fn = ''
             with open(file.name, 'wb') as f:
                 f.write(file.read())
             df = utl.master2df(file_name, widths, names, usecols, fn)
@@ -347,32 +347,27 @@ elif selected_item == 'マスタ更新':
             st.table(tables)
     #AS
     st.markdown('### ● AS内示アップロード(エクセル)')
-    file = st.file_uploader('かんばんメンテナンスリストをアップロードしてください.',
+    files = st.file_uploader('かんばんメンテナンスリストをアップロードしてください.',
                             type=['xls', 'xlsx', 'xlsm'],
                             accept_multiple_files=True)
     seisan = 'かんばんメンテナンスリスト生産'
     gyoumu = 'かんばんメンテナンスリスト業務'
-    if len(file) == 2:
-        if seisan in file[0].name and gyoumu in file[1].name or \
-            gyoumu in file[0].name and seisan in file[1].name:
+    if len(files) == 2:
+        if seisan in files[0].name and gyoumu in files[1].name or \
+            gyoumu in files[0].name and seisan in files[1].name:
             names = ['ad', 'n0', 'n1', 'n2']
-            ex0 = pd.read_excel(file[0],
-                sheet_name=0,
-                header=None,
-                names=names,
-                usecols=[3, 7, 8, 9],
-                skiprows=[0, 1],
-                dtype=str
-                )
-            ex1 = pd.read_excel(file[1],
-                sheet_name=0,
-                header=None,
-                names=names,
-                usecols=[3, 7, 8, 9],
-                skiprows=[0, 1],
-                dtype=str
-                )
-            df = pd.concat([ex0, ex1], ignore_index=True).fillna('')
+            exs = []
+            for file in files:
+                ex = pd.read_excel(file,
+                    sheet_name=0,
+                    header=None,
+                    names=names,
+                    usecols=[3, 7, 8, 9],
+                    skiprows=[0, 1],
+                    dtype=str
+                    )
+                exs.append(ex) 
+            df = pd.concat(exs, ignore_index=True).fillna('')
             df = df.astype({'n0': int64, 'n1': int64, 'n2': int64})
             drop = 'DROP TABLE IF EXISTS naiji'
             create = '''
