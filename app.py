@@ -21,10 +21,20 @@ styl = """
         color: #494949;
         background: transparent;
         border-left: solid 5px #7db4e6;
-        margin-bottom: 20px;
+        margin-bottom: 1em;
     }
-    #as , #capa{
+    #as , #capa {
         color: green;
+    }
+    h3 {
+        padding: .25em 0 .5em .75em;
+        margin: 1em 0;
+        border-left: 6px solid #ccc;
+        border-bottom: 1px solid #ccc;
+    }
+    .exg6vvm0 .effi0qh3 {
+        background-color: rgb(255 254 198);
+        margin-bottom: 1em;
     }
 </style>
 """
@@ -158,9 +168,9 @@ elif selected_item == 'リスト登録':
                 'hako1': '納入箱数2',
                 'd2': '納入日3',
                 'hako2': '納入箱数3',
-                'n0': '内示(当月)',
-                'n1': '内示(翌月)',
-                'n2': '内示(翌々月)',
+                'n0': '日当内示(当月)個',
+                'n1': '日当内示(翌月)個',
+                'n2': '日当内示(翌々月)個',
                 'capa': '置場スペース'
             }, inplace=True
         )
@@ -247,7 +257,7 @@ elif selected_item == 'マスタ更新':
     #DB設定
     db = 'test.db'  
     #マスタ
-    st.markdown('### ● マスタアップロード(KANOUT)')
+    st.markdown('### マスタアップロード(KANOUT)')
     file = st.file_uploader('マスタをアップロードしてください.')
     if file:
         if file.name == 'KANOUT':
@@ -287,10 +297,13 @@ elif selected_item == 'マスタ更新':
                         )
                     '''
             table_name = 'master'
-            tables = utl.df2table(db, df, drop, create, table_name)
-            st.table(tables)    
+            try:
+                tables = utl.df2table(db, df, drop, create, table_name)
+                st.table(tables)
+            except Exception as e:
+                st.error(e)
     #仕入先マスタ
-    st.markdown('### ● 仕入先アップロード(USROUT)')
+    st.markdown('### 仕入先アップロード(USROUT)')
     file = st.file_uploader('仕入先をアップロードしてください.')
     if file:
         if file.name == 'USROUT':
@@ -311,10 +324,13 @@ elif selected_item == 'マスタ更新':
                         )
                     '''
             table_name = 'sup'
-            tables = utl.df2table(db, df, drop, create, table_name)
-            st.table(tables)    
+            try:
+                tables = utl.df2table(db, df, drop, create, table_name)
+                st.table(tables)
+            except Exception as e:
+                st.error(e)
     #累積マスタ
-    st.markdown('### ● 発注累積アップロード(RUIOUT)')
+    st.markdown('### 発注累積アップロード(RUIOUT)')
     file = st.file_uploader('発注累積をアップロードしてください.')
     if file:
         if file.name == 'RUIOUT':
@@ -343,10 +359,13 @@ elif selected_item == 'マスタ更新':
                 )
                 '''
             table_name = 'rui'
-            tables = utl.df2table(db, df, drop, create, table_name)
-            st.table(tables)
+            try:
+                tables = utl.df2table(db, df, drop, create, table_name)
+                st.table(tables)
+            except Exception as e:
+                st.error(e)
     #AS
-    st.markdown('### ● AS内示アップロード(エクセル)')
+    st.markdown('### AS内示アップロード(エクセル)')
     files = st.file_uploader('かんばんメンテナンスリストをアップロードしてください.',
                             type=['xls', 'xlsx', 'xlsm'],
                             accept_multiple_files=True)
@@ -380,10 +399,13 @@ elif selected_item == 'マスタ更新':
                         )
                     '''
             table_name = 'naiji'
-            tables = utl.df2table(db, df, drop, create, table_name)
-            st.table(tables)
+            try:
+                tables = utl.df2table(db, df, drop, create, table_name)
+                st.table(tables)
+            except Exception as e:
+                st.error(e)
     #ストアキャパ
-    st.markdown('### ● ストアcapaアップロード(エクセル)')
+    st.markdown('### ストアcapaアップロード(エクセル)')
     files = st.file_uploader('ストア管理表をアップロードしてください.',
                             type=['xls', 'xlsx', 'xlsm'],
                             accept_multiple_files=True)
@@ -415,6 +437,9 @@ elif selected_item == 'マスタ更新':
                     )
                 '''
         table_name = 'capa'
-        tables = utl.df2table(db, df, drop, create, table_name)
-        st.table(tables)
+        try:
+            tables = utl.df2table(db, df, drop, create, table_name)
+            st.table(tables)
+        except Exception as e:
+            st.error(e)
 
