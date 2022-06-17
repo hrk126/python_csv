@@ -21,10 +21,20 @@ styl = """
         color: #494949;
         background: transparent;
         border-left: solid 5px #7db4e6;
-        margin-bottom: 20px;
+        margin-bottom: 1em;
     }
-    #as {
+    #as , #capa {
         color: green;
+    }
+    h3 {
+        padding: .25em 0 .5em .75em;
+        margin: 1em 0;
+        border-left: 6px solid #ccc;
+        border-bottom: 1px solid #ccc;
+    }
+    .exg6vvm0 .effi0qh3 {
+        background-color: rgb(255 254 198);
+        margin-bottom: 1em;
     }
 </style>
 """
@@ -89,13 +99,13 @@ if selected_item == '品番検索':
         ) 
         if len(aggrid_data['selected_rows']) == 1:    
             st.write('追加情報を入力')
-            num: int = st.text_input('集欠数', value=0)
-            num_all: int = st.text_input('集欠数_全体', value=0)
+            num: int = st.number_input('集欠数', value=0, min_value=0)
+            num_all: int = st.number_input('集欠数_全体', value=0, min_value=0)
             cust_name: str = st.text_input('得意先名', value='')
             due_date: datetime.date = st.date_input('期日', value=datetime.date.today())
-            tonyu: int = st.text_input('投入数', value=0)
-            inventory: int = st.text_input('在庫数', value=0)
-            afure: int = st.text_input('あふれ数', value=0)
+            tonyu: int = st.number_input('投入数', value=0, min_value=0)
+            inventory: int = st.number_input('在庫数', value=0, min_value=0)
+            afure: int = st.number_input('あふれ数', value=0, min_value=0)
             comment: str = st.text_input('コメント', value='')  
             register_button = st.button('選択した品番を登録')   
             if register_button:
@@ -158,9 +168,10 @@ elif selected_item == 'リスト登録':
                 'hako1': '納入箱数2',
                 'd2': '納入日3',
                 'hako2': '納入箱数3',
-                'n0': '内示(当月)',
-                'n1': '内示(翌月)',
-                'n2': '内示(翌々月)'
+                'n0': '日当内示(当月)個',
+                'n1': '日当内示(翌月)個',
+                'n2': '日当内示(翌々月)個',
+                'capa': '置場スペース'
             }, inplace=True
         )
         st.session_state.list = df_data
@@ -246,7 +257,7 @@ elif selected_item == 'マスタ更新':
     #DB設定
     db = 'test.db'  
     #マスタ
-    st.markdown('### ● マスタアップロード(KANOUT)')
+    st.markdown('### マスタアップロード(KANOUT)')
     file = st.file_uploader('マスタをアップロードしてください.')
     if file:
         if file.name == 'KANOUT':
@@ -286,18 +297,21 @@ elif selected_item == 'マスタ更新':
                         )
                     '''
             table_name = 'master'
-            tables = utl.df2table(db, df, drop, create, table_name)
-            st.table(tables)    
+            try:
+                tables = utl.df2table(db, df, drop, create, table_name)
+                st.table(tables)
+            except Exception as e:
+                st.error(e)
     #仕入先マスタ
-    st.markdown('### ● 仕入先アップロード(USROUT)')
+    st.markdown('### 仕入先アップロード(USROUT)')
     file = st.file_uploader('仕入先をアップロードしてください.')
     if file:
         if file.name == 'USROUT':
             file_name = file.name
             widths = [6, 5, 20]
-            names = ['ad', 'sup_code', 'sup_name']
+            names = ['aki', 'sup_code', 'sup_name']
             usecols= [1, 2]
-            fn = 0
+            fn = ''
             with open(file.name, 'wb') as f:
                 f.write(file.read())
             df = utl.master2df(file_name, widths, names, usecols, fn)
@@ -310,10 +324,13 @@ elif selected_item == 'マスタ更新':
                         )
                     '''
             table_name = 'sup'
-            tables = utl.df2table(db, df, drop, create, table_name)
-            st.table(tables)    
+            try:
+                tables = utl.df2table(db, df, drop, create, table_name)
+                st.table(tables)
+            except Exception as e:
+                st.error(e)
     #累積マスタ
-    st.markdown('### ● 発注累積アップロード(RUIOUT)')
+    st.markdown('### 発注累積アップロード(RUIOUT)')
     file = st.file_uploader('発注累積をアップロードしてください.')
     if file:
         if file.name == 'RUIOUT':
@@ -342,36 +359,34 @@ elif selected_item == 'マスタ更新':
                 )
                 '''
             table_name = 'rui'
-            tables = utl.df2table(db, df, drop, create, table_name)
-            st.table(tables)
+            try:
+                tables = utl.df2table(db, df, drop, create, table_name)
+                st.table(tables)
+            except Exception as e:
+                st.error(e)
     #AS
-    st.markdown('### ● AS内示アップロード(エクセル)')
-    file = st.file_uploader('かんばんメンテナンスリストをアップロードしてください.',
+    st.markdown('### AS内示アップロード(エクセル)')
+    files = st.file_uploader('かんばんメンテナンスリストをアップロードしてください.',
                             type=['xls', 'xlsx', 'xlsm'],
                             accept_multiple_files=True)
     seisan = 'かんばんメンテナンスリスト生産'
     gyoumu = 'かんばんメンテナンスリスト業務'
-    if len(file) == 2:
-        if seisan in file[0].name and gyoumu in file[1].name or \
-            gyoumu in file[0].name and seisan in file[1].name:
+    if len(files) == 2:
+        if seisan in files[0].name and gyoumu in files[1].name or \
+            gyoumu in files[0].name and seisan in files[1].name:
             names = ['ad', 'n0', 'n1', 'n2']
-            ex0 = pd.read_excel(file[0],
-                sheet_name=0,
-                header=None,
-                names=names,
-                usecols=[3, 7, 8, 9],
-                skiprows=[0, 1],
-                dtype=str
-                )
-            ex1 = pd.read_excel(file[1],
-                sheet_name=0,
-                header=None,
-                names=names,
-                usecols=[3, 7, 8, 9],
-                skiprows=[0, 1],
-                dtype=str
-                )
-            df = pd.concat([ex0, ex1]).fillna('')
+            exs = []
+            for file in files:
+                ex = pd.read_excel(file,
+                    sheet_name=0,
+                    header=None,
+                    names=names,
+                    usecols=[3, 7, 8, 9],
+                    skiprows=[0, 1],
+                    dtype=str
+                    )
+                exs.append(ex) 
+            df = pd.concat(exs, ignore_index=True).fillna('')
             df = df.astype({'n0': int64, 'n1': int64, 'n2': int64})
             drop = 'DROP TABLE IF EXISTS naiji'
             create = '''
@@ -384,8 +399,47 @@ elif selected_item == 'マスタ更新':
                         )
                     '''
             table_name = 'naiji'
+            try:
+                tables = utl.df2table(db, df, drop, create, table_name)
+                st.table(tables)
+            except Exception as e:
+                st.error(e)
+    #ストアキャパ
+    st.markdown('### ストアcapaアップロード(エクセル)')
+    files = st.file_uploader('ストア管理表をアップロードしてください.',
+                            type=['xls', 'xlsx', 'xlsm'],
+                            accept_multiple_files=True)
+    if utl.check_store_kanrihyo(files):
+        names = ['store', 't131', 't331', 't332', 't342', 'retu']
+        exs = []
+        for file in files:
+            ex = pd.read_excel(file,
+                header=None,
+                names=names,
+                usecols=[1, 2, 3, 4, 5, 8],
+                skiprows=[0, 1, 2, 3, 4],
+                dtype=str
+                )
+            exs.append(ex)
+        df = pd.concat(exs, ignore_index=True).dropna()
+        df = df[df['store'] != '↓']
+        df = df.astype({'t131': int64, 't331': int64, 't332': int64, 't342': int64, 'retu': int64})
+        drop = 'DROP TABLE IF EXISTS capa'
+        create = '''
+                    CREATE TABLE capa (
+                        id INTEGER PRIMARY KEY, 
+                        store TEXT,
+                        t131 INTEGER,
+                        t331 INTEGER,
+                        t332 INTEGER,
+                        t342 INTEGER,
+                        retu INTEGER
+                    )
+                '''
+        table_name = 'capa'
+        try:
             tables = utl.df2table(db, df, drop, create, table_name)
             st.table(tables)
-    #ストアキャパ
-    st.markdown('### ● ストアキャパアップロード(エクセル)')
-    
+        except Exception as e:
+            st.error(e)
+

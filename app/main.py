@@ -1,9 +1,11 @@
+# coding: cp932
 from typing import List, Optional
 from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
 from . import crud, models, schemas
 from .database import SessionLocal, engine
 import datetime
+import re
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -22,24 +24,20 @@ async def create_data(data: schemas.ShuketuCreate, db: Session=Depends(get_db)):
     return crud.create_data(db=db, data=data)
 
 # read
-# @app.get('/master/', response_model=schemas.MasterGet)
-# async def get_master(db: Session=Depends(get_db), id: int=0):
-#   re_master = crud.get_master(db=db, id=id)
-#   return re_master
-
 @app.get('/masters/')
 async def get_masters(db: Session=Depends(get_db), hinban: str='', store: Optional[str]=''):
     masters = crud.get_masters(db=db, hinban=hinban, store=store)
     for master in masters:
         try:
             master.sup_name = master.sup.sup_name
-        except:
-            master.sup_name = ''
-            print('error')
+        except Exception as e:
+            master.sup_name = '不明'
+            print(e)
         finally:
             delattr(master,'sup')
     return masters
 
+# 集欠リストを返す
 @app.get('/data/')
 async def get_data(db: Session=Depends(get_db), day: str=datetime.date.today().isoformat()):
     data = crud.get_data(db=db, day=day)
@@ -48,10 +46,30 @@ async def get_data(db: Session=Depends(get_db), day: str=datetime.date.today().i
         item_master = item.master
         master_sup = item_master.sup
         master_rui = item_master.rui
-        master_naiji = item_master.naiji
         d0 = '20' + master_rui.n_bi0
         d1 = '20' + master_rui.n_bi1
         d2 = '20' + master_rui.n_bi2
+        # 内示
+        n_0 = 0
+        n_1 = 0
+        n_2 = 0
+        try:
+            master_naiji = item_master.naiji
+            n_0 = master_naiji.n0
+            n_1 = master_naiji.n1
+            n_2 = master_naiji.n2
+        except Exception as e:
+            print(e)
+        # ストアキャパ
+        store_capa = 0
+        try:
+            m = re.search(r'(TP|RG)(\d{3})', item_master.box)
+            if m:
+                box = 't' + m.group(2)
+                master_capa = item_master.capa
+                store_capa = getattr(master_capa, box) * master_capa.retu
+        except Exception as e:
+            print(e)
         buf = {
             'id': item.id,
             'ad': item.ad,
@@ -81,9 +99,10 @@ async def get_data(db: Session=Depends(get_db), day: str=datetime.date.today().i
             'hako1': master_rui.hako1,
             'd2': d2[:4] + '-' + d2[4:6] + '-' + d2[6:],
             'hako2': master_rui.hako2,
-            'n0': master_naiji.n0,
-            'n1': master_naiji.n1,
-            'n2': master_naiji.n2
+            'n0': n_0,
+            'n1': n_1,
+            'n2': n_2,
+            'capa': store_capa
         }
         all_data.append(buf)
     return all_data

@@ -1,7 +1,9 @@
+# coding: cp932
 import pandas as pd
 import unicodedata
 import sqlite3
 from numpy import int64
+import re
 
 #全角文字にスペース付与
 def add_space_if_fw(text):
@@ -24,10 +26,11 @@ def master2df(file_name, widths, names, usecols, fn):
 
     with open(file_name_changed, mode='w', encoding='UTF-8') as f:
         f.write(result)
-
-    df = pd.read_fwf(file_name_changed, widths=widths, names=names, usecols=usecols, encoding='UTF-8', dtype = str).fillna(fn)
+    
+    df = pd.read_fwf(file_name_changed, widths=widths, names=names, usecols=usecols, encoding='UTF-8', dtype=str).fillna(fn)
 
     if file_name == 'USROUT':
+        df = df[df['sup_code'] != '']
         df['sup_name'] = df['sup_name'].str.strip()
     elif file_name == 'KANOUT':
         df = df.astype({'num': int64, 'k_num': int64, 'y_num': int64, 'h_num': int64})
@@ -81,12 +84,34 @@ def df2table(db, df, drop, create, table_name):
 
     con = sqlite3.connect(db)
     cur = con.cursor()
-    cur.execute(drop)
-    cur.execute(create)
-    df.to_sql(table_name, con, if_exists='append', index=False)
-    cur.execute(
-        f'SELECT * FROM {table_name} LIMIT 5'
-    )
-    tables = cur.fetchall()
-    con.close()
-    return tables
+    try:
+        cur.execute(drop)
+        cur.execute(create)
+        df.to_sql(table_name, con, if_exists='append', index=False)
+        cur.execute(
+            f'SELECT * FROM {table_name} LIMIT 5'
+        )
+        tables = cur.fetchall()
+        return tables
+    except Exception as e:
+        print(e)
+    finally:
+        con.close()
+
+#ストア管理表確認
+def check_store_kanrihyo(file_list):
+    if len(file_list) != 4:
+        return False
+    l = []
+    for file in file_list:
+        m = re.match(r'(.+ストア管理表).+', file.name)
+        if m:
+            s = m.groups()
+            if s not in l:
+                l.append(s)
+    if len(l) == 4:
+        return True
+    else:
+        return False
+
+

@@ -18,6 +18,7 @@ class Master(Base):
     shuketu = relationship('Shuketu', backref='master')
     rui = relationship('Rui', uselist=False)
     naiji = relationship('Naiji', uselist=False)
+    capa = relationship('Capa', uselist=False)
 
 class Shuketu(Base):
     __tablename__ = 'shuketu'
@@ -80,3 +81,13 @@ class Naiji(Base):
     n0 = Column(Integer)
     n1 = Column(Integer)
     n2 = Column(Integer)
+
+class Capa(Base):
+    __tablename__ = 'capa'
+    id = Column(Integer, primary_key=True, autoincrement=True, index=True)
+    store = Column(String, ForeignKey('master.store', ondelete="SET NULL"), index=True)
+    t131 = Column(Integer)
+    t331 = Column(Integer)
+    t332 = Column(Integer)
+    t342 = Column(Integer)
+    retu = Column(Integer)
