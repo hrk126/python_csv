@@ -255,7 +255,7 @@ elif selected_item == 'リスト登録':
 # ------------------master-------------------------------------------------
 elif selected_item == 'マスタ更新':
     #DB設定
-    db = 'test.db'  
+    db = 'main.db' 
     #マスタ
     st.markdown('### マスタアップロード(KANOUT)')
     file = st.file_uploader('マスタをアップロードしてください.')
